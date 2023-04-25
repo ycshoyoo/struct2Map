@@ -92,7 +92,9 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 				res[tagValList[0]] = list
 			}
 		default:
-			if !fieldVal.IsZero() || !hasOmitemptyTag {
+			if !fieldVal.IsValid() && !hasOmitemptyTag {
+				res[tagValList[0]] = nil
+			} else if !fieldVal.IsZero() || !hasOmitemptyTag {
 				res[tagValList[0]] = fieldVal.Interface()
 			}
 		}
