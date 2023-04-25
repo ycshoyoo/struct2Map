@@ -2,10 +2,17 @@ package struct2Map
 
 import (
 	"fmt"
+	"github.com/wxnacy/wgo/arrays"
 	"reflect"
+	"strings"
 )
 
 var emptySlice []struct{}
+
+const (
+	TagOfIgnore    = "-"
+	TagOfOmitempty = "omitempty"
+)
 
 func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) {
 	val := reflect.ValueOf(iface)
@@ -30,11 +37,20 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 		if !ok {
 			continue
 		}
+		tagValList := strings.Split(tagVal, ",")
+		var hasIgnoreTag = arrays.ContainsString(tagValList, TagOfIgnore) != -1
+		var hasOmitemptyTag = arrays.ContainsString(tagValList, TagOfOmitempty) != -1
+		if hasIgnoreTag {
+			continue
+		}
 		fieldVal := val.Field(i)
 		// 字段合法性校验
 		if fieldVal.Kind() == reflect.Ptr && fieldVal.IsNil() {
-			res[tagVal] = nil
-			continue
+			//需要判断其是否存在omitempty
+			if !hasOmitemptyTag {
+				res[tagVal] = nil
+				continue
+			}
 		}
 		if fieldVal.Kind() == reflect.Ptr {
 			fieldVal = fieldVal.Elem()
@@ -47,15 +63,15 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 			if err != nil {
 				return nil, err
 			}
-			res[tagVal] = m
+			res[tagValList[0]] = m
 		case reflect.Slice, reflect.Array:
 			//如果切片长度为0 那么返回一个空的切片
 			if fieldVal.Len() == 0 {
-				res[tagVal] = emptySlice
+				res[tagValList[0]] = emptySlice
 			}
 			//如果切片元素非struct的话
 			if fieldType.Type.Elem().Kind() != reflect.Struct {
-				res[tagVal] = fieldVal.Interface()
+				res[tagValList[0]] = fieldVal.Interface()
 			} else {
 				list := make([]interface{}, 0, fieldVal.Len())
 				for i := 0; i < fieldVal.Len(); i++ {
@@ -73,10 +89,12 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 					}
 					list = append(list, m)
 				}
-				res[tagVal] = list
+				res[tagValList[0]] = list
 			}
 		default:
-			res[tagVal] = fieldVal.Interface()
+			if !fieldVal.IsZero() || !hasOmitemptyTag {
+				res[tagValList[0]] = fieldVal.Interface()
+			}
 		}
 	}
 	return res, nil
