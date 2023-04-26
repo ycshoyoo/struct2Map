@@ -35,12 +35,11 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 		fieldType := typ.Field(i)
 		tagVal, ok := fieldType.Tag.Lookup(tag)
 		if !ok {
-			continue
+			tagVal = fieldType.Name
 		}
 		tagValList := strings.Split(tagVal, ",")
-		var hasIgnoreTag = arrays.ContainsString(tagValList, TagOfIgnore) != -1
 		var hasOmitemptyTag = arrays.ContainsString(tagValList, TagOfOmitempty) != -1
-		if hasIgnoreTag {
+		if arrays.ContainsString(tagValList, TagOfIgnore) != -1 {
 			continue
 		}
 		fieldVal := val.Field(i)
