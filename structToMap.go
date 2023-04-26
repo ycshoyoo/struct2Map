@@ -44,6 +44,13 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 			continue
 		}
 		fieldVal := val.Field(i)
+		if !fieldVal.IsValid() {
+			if hasOmitemptyTag {
+				continue
+			}
+		} else if fieldVal.IsZero() && hasOmitemptyTag {
+			continue
+		}
 		// 字段合法性校验
 		if fieldVal.Kind() == reflect.Ptr && fieldVal.IsNil() {
 			//需要判断其是否存在omitempty
@@ -92,13 +99,7 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 				res[tagValList[0]] = list
 			}
 		default:
-			if !fieldVal.IsValid() {
-				if !hasOmitemptyTag {
-					res[tagValList[0]] = nil
-				}
-			} else if !fieldVal.IsZero() || !hasOmitemptyTag {
-				res[tagValList[0]] = fieldVal.Interface()
-			}
+			res[tagValList[0]] = fieldVal.Interface()
 		}
 	}
 	return res, nil
