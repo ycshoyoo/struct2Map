@@ -48,7 +48,7 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 			if hasOmitemptyTag {
 				continue
 			}
-		} else if fieldVal.IsZero() && hasOmitemptyTag {
+		} else if fieldVal.Kind() != reflect.Struct && fieldVal.IsZero() && hasOmitemptyTag {
 			continue
 		}
 		// 字段合法性校验
