@@ -38,7 +38,7 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 			tagVal = fieldType.Name
 		}
 		tagValList := strings.Split(tagVal, ",")
-		var hasOmitemptyTag = arrays.ContainsString(tagValList, TagOfOmitempty) != -1
+		var hasOmitemptyTag = hasOmitemptyTag(tagValList)
 		if arrays.ContainsString(tagValList, TagOfIgnore) != -1 {
 			continue
 		}
@@ -54,7 +54,7 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 		if fieldVal.Kind() == reflect.Ptr && fieldVal.IsNil() {
 			//需要判断其是否存在omitempty
 			if !hasOmitemptyTag {
-				res[tagVal] = nil
+				res[tagValList[0]] = nil
 				continue
 			}
 		}
@@ -102,4 +102,13 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 		}
 	}
 	return res, nil
+}
+
+func hasOmitemptyTag(tagList []string) bool {
+	for _, val := range tagList {
+		if strings.TrimSpace(val) == TagOfOmitempty {
+			return true
+		}
+	}
+	return false
 }
