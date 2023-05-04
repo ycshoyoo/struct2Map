@@ -13,22 +13,12 @@ type T1 struct {
 }
 
 type T2 struct {
-	N1 string `json:"n1"`
+	N1 *string `json:"n1, omitempty"`
 }
 
 func TestStructToMap(t *testing.T) {
-	//str := "123"
-	t2 := T2{
-		N1: "yc2",
-	}
-	t3 := T2{
-		N1: "yc3",
-	}
-	t1 := T1{
-		Name: []*T2{&t2, &t3},
-		Age:  18,
-	}
-	m, _ := StructToMap(t1, "json")
+	var t2 T2
+	m, _ := StructToMap(t2, "json")
 	bys, _ := json.Marshal(m)
 	fmt.Println(string(bys))
 }

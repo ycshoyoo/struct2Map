@@ -106,7 +106,7 @@ func StructToMap(iface interface{}, tag string) (map[string]interface{}, error) 
 
 func hasOmitemptyTag(tagList []string) bool {
 	for _, val := range tagList {
-		if strings.TrimSpace(val) == TagOfOmitempty {
+		if val == TagOfOmitempty {
 			return true
 		}
 	}
